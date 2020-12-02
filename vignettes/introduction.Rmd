@@ -1,5 +1,7 @@
 ---
-title: "introduction"
+title: "Gradient Metrics HW Assignment"
+author: "Ori Kronfeld"
+date: "December 03, 2020"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{introduction}
@@ -14,6 +16,36 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Introduction:
+
+One of our clients asked us to develop the best possible message for the product they offer. We developed a survey experiment that would display a random combination of phrases along with a price and the length of a subscription. Each respondent saw 12 random permutations of the message. For each permutation, the respondent was asked to rate "How likely are you to download this mobile app?". The app we are referring to in this case was an app to help people sleep better.
+
+The goal of this assignment is to advice on the best combination of attributes displayed in the message.
+
+# Solution Steps:
+I approach the solution in the following steps:
+1. Run ordinal logistic regression for each of the attributes of the message, as well as combinationd of them, in order to see their effect on the overall likeliness to download (answer, where it is desinged an ordered factor)
+2. Combine the experiment data together with the survey data and train a RandomForest model for the classificaiton of answer.
+
+All of the data and trained model already exists in the package provided.
+
+We'll start by loading the package
+
 ```{r setup}
 library(GradientMetricsHW)
 ```
+
+# Examine the model:
+As mentiond I created a Random Forest model from both the experiment and survery data merged together.
+The model reached a MAE of 0.35.
+
+```{r, results='asis',echo=FALSE}
+(rf_model$confusion)
+```
+
+The importance of variables can be seen in the following table:
+```{r, results='asis',echo=FALSE}
+#varImpPlot(rf_model)
+```
+
+
