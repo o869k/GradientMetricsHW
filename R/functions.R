@@ -3,7 +3,7 @@ run_ordinal_regression_effect <- function (x) {
     ctable <- coef(summary(model)) ## store table
     p <- pnorm(abs(ctable[, "t value"]), lower.tail = FALSE) * 2 ## calculate and store p values
     ctable <- cbind(ctable, "p value" = p) ## combined table
-    print(ctable)
+    print(kable(ctable))
     plot(Effect(focal.predictors = x,model))
 }
 
@@ -13,11 +13,11 @@ generate_optimal_message <- function (x) {
     cat("Porbability to be Very Likley:")
     cat(max(test_predictions[,4]))
     cat("\nMessage:\n")
-    print(cj_prof[which.max(test_predictions[,4]),])
-    cat("Porbability to be Somewhat Likley:")
-    cat(max(test_predictions[,3]))
-    cat("\nMessage:\n")
-    print(cj_prof[which.max(test_predictions[,3]),])
+    print((cj_prof[which.max(test_predictions[,4]),]))
+    # cat("Porbability to be Somewhat Likley:")
+    # cat(max(test_predictions[,3]))
+    # cat("\nMessage:\n")
+    # print((cj_prof[which.max(test_predictions[,3]),]))
 }
 
 effect_of_survey_data <- function(x) {

@@ -24,28 +24,92 @@ The goal of this assignment is to advice on the best combination of attributes d
 
 # Solution Steps:
 I approach the solution in the following steps:
-1. Run ordinal logistic regression for each of the attributes of the message, as well as combinationd of them, in order to see their effect on the overall likeliness to download (answer, where it is desinged an ordered factor)
-2. Combine the experiment data together with the survey data and train a RandomForest model for the classificaiton of answer.
+
+1. Run ordinal logistic regression for each of the attributes of the message, as well as combinations of them, in order to see their effect on the overall likeliness to download (=answer, where it is designed an ordered factor).
+2. Combine the experiment data together with the survey data and train a large Random Forest model for the classificaiton of answer to 4 different groups.
+3. Following that, we can now apply any of the different 3240 permutations of a message for a specific individual and its set of survey and core data. The result will be a list of probabilities to answer any of the 4 different levels for each message permutation. We can then select the permutation that best suit for the responder and present it, optimizing the likeliness for him to engage with the application.
+4. Next, we would like to know the overall effect of the responders core data on the likeliness to download. We can run the model and each permutation to each individual, and get a distribution of probabilities for each of the 4 different likeliness levels. We can present those vs. the different level of the attribute and try to identify groups of indiviauls that are highly likely downloaders so that our client will be able to understand the potential audience in the market and target it.
 
 All of the data and trained model already exists in the package provided.
 
-We'll start by loading the package
+We'll start by loading the package:
 
 ```{r setup}
 library(GradientMetricsHW)
+library(randomForest)
+library(knitr)
+library(ggplot2)
 ```
+# Examine attributes:
+
+Lets examine the effect of different attributes on the likeliness. For example, the price of application:
+```{r, fig.align='center',fig.height=6,fig.width=6,echo=FALSE} 
+run_ordinal_regression_effect(c("price"))
+```
+
+As can be seen, the price tag of $40 overall increase the portion of responders that will very unlikely download the app, while reducing the cost to $20 will reduce that portion as well. Thats a fair assumtpion that the data support.
+
+If we will examine other part of the message, for example cross joint of duration and social proff we can see there's no clear desicion to wheter they contribute or not, and it is possibly depend on the individual data that we will get from the survey.
+```{r, fig.align='center',fig.height=6,fig.width=6,echo=FALSE} 
+run_ordinal_regression_effect(c("duration","social_proof"))
+```
+
+User are welcome to run the function run_ordinal_regression_effect in order to examin more attributes combinations.
+
+Given the results above, I intended to examine the survey data as well.
 
 # Examine the model:
-As mentiond I created a Random Forest model from both the experiment and survery data merged together.
-The model reached a MAE of 0.35.
+As mentiond before, I created a Random Forest model from both the experiment and survery data merged together.
+The model reached a MAE of 0.35 and overall accuracy of 70%, and its confusion matrix can be seen:
 
-```{r, results='asis',echo=FALSE}
-(rf_model$confusion)
+```{r,echo=FALSE}
+kable(rf_model$confusion)
 ```
 
-The importance of variables can be seen in the following table:
-```{r, results='asis',echo=FALSE}
-#varImpPlot(rf_model)
+The importance of variables in the RF model can also be seen in the following table:
+```{r, fig.align='center',echo=FALSE,fig.height=6,fig.width=6} 
+varImpPlot(rf_model)
 ```
 
+As can be seen, while our experiment attributes (part of message features) such as rtb,offer,social_proff,price and duration contibutes greatly to the gini index and helps divide the tree better, actualy the survey features (education,income,region,interests,behavior and attitudes..) are the ones that help to increase the accuracy in order to predict best message per individual.
 
+# Apply the model:
+Once the model is trained we can now use it with a candidate individual and run all message permutations to find the optimal one. This is equal to the case of presenting a message to a new candidate customer.
+
+For example, for respondent R_10HSe2bbKGbKZ2h, the following message is optimal:
+```{r,echo=FALSE}
+generate_optimal_message(unique(dataset[dataset$response_id=="R_10HSe2bbKGbKZ2h",-c(1:9)]))
+```
+
+Note that the message of "very likely" will be chosen only if that will lead to high probability.
+
+For another example, 
+We can see that for this candidate theres no optimal message, and a very low "very likely" probability, possibly due to its personal data.
+```{r,echo=FALSE}
+generate_optimal_message(unique(dataset[dataset$response_id=="R_0ezucdFLFLIYzK1",-c(1:9)]))
+```
+
+In order to use the above function generate_optimal_message, one needs to input a data frame with all individual data exist, possibly imputed. The abovementioned example are taken from the dataset itself.
+
+# Overall effects of responders data:
+Once we understood that the individual data affects greatly the proper message to be selected (as well as it function as an exclusion list for specific subjects), we would like to analyze a few of the attributes to bettwe group the responders.
+
+If we will look at the area, young children counts and work schedulre as an example:
+```{r, fig.align='center',echo=FALSE,fig.height=8,fig.width=8}
+effect_of_survey_data("d_urban")
+effect_of_survey_data("d_child_infant")
+effect_of_survey_data("d_work_schedule")
+```
+we can say that the more likley to accept the appliacaion are individuals with infant children under age 2, who live in urban area and work in rotating work schedule. Those attributes can lead to better engagments with the application.
+
+However some attributes do not contribute at all to the prediction (perhaps only joint with other attributes), such as the region of responder
+```{r, fig.align='center',echo=FALSE,fig.height=8,fig.width=8}
+effect_of_survey_data("s_region")
+```
+
+and some decrease the probability to engage, like older folks:
+```{r, fig.align='center',echo=FALSE,fig.height=8,fig.width=8}
+effect_of_survey_data("s_age")
+```
+
+But obviosly there are many more cases and groups, and user can run the function effect_of_survey_data in order to examin it.

@@ -10,6 +10,7 @@ Imports:
     dplyr,
     purrr,
     MASS,
+        knitr,
     randomForest
 Maintainer: Ori Kronfeld <orik1984@gmail.com>
 Description: We developed a survey experiment that would display a random combination of phrases along with a price and the length of a subscription. Each respondent saw 12 random permutations of the message. For each permutation, the respondent was asked to rate "How likely are you to download this mobile app?". The app we are referring to in this case was an app to help people sleep better. Your goal now is to advice on the best combination of attributes displayed in the message.
@@ -19,6 +20,5 @@ LazyData: true
 Depends: 
     R (>= 2.10)
 Suggests: 
-    knitr,
     rmarkdown
 VignetteBuilder: knitr
