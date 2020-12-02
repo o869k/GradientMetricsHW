@@ -1,1 +1,8 @@
 exportPattern("^[[:alpha:]]+")
+import(effects)
+import(ggplot2)
+import(haven)
+import(dplyr)
+import(purrr)
+import(MASS)
+import(randomForest)
