@@ -29,6 +29,7 @@ I approach the solution in the following steps:
 2. Combine the experiment data together with the survey data and train a large Random Forest model for the classificaiton of answer to 4 different groups.
 3. Following that, we can now apply any of the different 3240 permutations of a message for a specific individual and its set of survey and core data. The result will be a list of probabilities to answer any of the 4 different levels for each message permutation. We can then select the permutation that best suit for the responder and present it, optimizing the likeliness for him to engage with the application.
 4. Next, we would like to know the overall effect of the responders core data on the likeliness to download. We can run the model and each permutation to each individual, and get a distribution of probabilities for each of the 4 different likeliness levels. We can present those vs. the different level of the attribute and try to identify groups of indiviauls that are highly likely downloaders so that our client will be able to understand the potential audience in the market and target it.
+5. We can then combine all of the above to find the optimal message permutation to a specific group of responders with their attributes, in order to increase the overall conversion rate with the application.
 
 All of the data and trained model already exists in the package provided.
 
@@ -113,3 +114,26 @@ effect_of_survey_data("s_age")
 ```
 
 But obviosly there are many more cases and groups, and user can run the function effect_of_survey_data in order to examin it.
+
+# Combine the above for specific message per group of responders
+
+As an example we will continue with the group discovered before (individuals with infant children under age 2, who live in urban area and work in rotating work schedule). we apply the generate_optimal_message for each of them and avergae the scores per message to find the optimal one.
+
+```{r,echo=FALSE}
+responsers_list = unique(dataset$response_id[which(dataset$d_urban==1 & dataset$d_child_infant!=0 & dataset$d_child_infant!=1 & dataset$d_work_schedule==4)])
+test_predictions = NULL
+for (responser_tmp in responsers_list) {
+  x = merge(unique(dataset[dataset$response_id==responser_tmp,-c(1:9)]),cj_prof)
+  if (is.null(test_predictions)) {
+    test_predictions = predict(rf_model,x,"prob")
+  } else {
+    test_predictions = test_predictions+predict(rf_model,x,"prob")
+  }
+}
+test_predictions = test_predictions/length(responsers_list)
+cat("Porbability to be Very Likley:")
+cat(max(test_predictions[,4]))
+cat("\nMessage:\n")
+print((cj_prof[which.max(test_predictions[,4]),]))
+
+```
